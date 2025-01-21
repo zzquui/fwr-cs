@@ -4,10 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>投票系统</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #4CAF50; }
+        .vote-option { margin: 10px 0; }
+        .vote-option input { margin-right: 10px; }
+        #vote-result { margin-top: 20px; }
+        .reasons { margin-top: 20px; }
+    </style>
 </head>
 <body>
+
     <h1>投票系统</h1>
     <p>请选择今天让你生气的畜生，并提供投票理由：</p>
+    
     <form action="https://github.com/your-username/your-repo-name/issues/new" method="get">
         <label>
             <input type="radio" name="vote" value="乔治"> 乔治
@@ -21,5 +31,68 @@
         <textarea name="reason" placeholder="请输入你的投票理由" rows="4" cols="50"></textarea><br><br>
         <button type="submit">提交投票</button>
     </form>
+
+    <div id="vote-result">
+        <h3>投票结果：</h3>
+        <p>乔治: <span id="python-result">0</span></p>
+        <p>孟子: <span id="cpp-result">0</span></p>
+        <p>Hpv: <span id="js-result">0</span></p>
+    </div>
+
+    <div class="reasons">
+        <h3>投票理由：</h3>
+        <div id="reasons-list"></div>
+    </div>
+
+    <script>
+        // 投票数据存储路径（GitHub API）
+        const repoOwner = 'your-username';
+        const repoName = 'your-repo-name';
+        const issueLabel = '投票';  // 给投票的 Issues 添加标签
+
+        async function fetchIssues() {
+            const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/issues?labels=${issueLabel}`);
+            const issues = await response.json();
+
+            const votes = { "乔治": 0, "孟子": 0, "Hpv": 0 };
+            const reasons = { "乔治": [], "孟子": [], "Hpv": [] };
+
+            // 处理所有 Issues
+            issues.forEach(issue => {
+                const vote = issue.title;  // 通过标题获取投票选项
+                const reason = issue.body; // 通过 body 获取投票理由
+                if (votes[vote] !== undefined) {
+                    votes[vote] += 1;
+                    reasons[vote].push(reason);
+                }
+            });
+
+            // 更新页面显示
+            displayVotes(votes, reasons);
+        }
+
+        function displayVotes(votes, reasons) {
+            document.getElementById('vote-result').innerHTML = `
+                <h3>投票结果：</h3>
+                <p>乔治: ${votes.乔治 || 0}</p>
+                <p>孟子: ${votes.孟子 || 0}</p>
+                <p>Hpv: ${votes.Hpv || 0}</p>
+            `;
+            
+            let reasonsContent = "<h3>投票理由：</h3>";
+            Object.keys(reasons).forEach(option => {
+                reasonsContent += `<h4>${option}</h4>`;
+                reasons[option].forEach(reason => {
+                    reasonsContent += `<p>${reason}</p>`;
+                });
+            });
+            
+            document.getElementById('reasons-list').innerHTML = reasonsContent;
+        }
+
+        // 页面加载时获取投票数据
+        fetchIssues();
+    </script>
+
 </body>
 </html>
