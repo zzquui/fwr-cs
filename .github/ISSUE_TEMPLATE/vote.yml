@@ -1,0 +1,15 @@
+name: 投票
+description: 参与投票并提供理由
+labels:
+  - 投票
+
+body:
+  - type: checkbox
+    label: 选择你的投票选项
+    options:
+      - 乔治
+      - 孟子
+      - Hpv
+  - type: textarea
+    label: 投票理由
+    description: 请提供你的投票理由
