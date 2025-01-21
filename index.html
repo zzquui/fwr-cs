@@ -50,11 +50,12 @@
     </div>
 
     <script>
-        // 投票数据存储路径（GitHub API）
+        // GitHub 仓库信息
         const repoOwner = 'zzquui';
         const repoName = 'fwr-cs';
-        const issueLabel = '投票';  // 给投票的 Issues 添加标签
+        const issueLabel = 'CS榜';  // 给投票的 Issues 添加标签
 
+        // 获取所有带标签的 Issue
         async function fetchIssues() {
             const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/issues?labels=${issueLabel}`);
             const issues = await response.json();
@@ -62,10 +63,12 @@
             const votes = { "乔治": 0, "孟子": 0, "Hpv": 0 };
             const reasons = { "乔治": [], "孟子": [], "Hpv": [] };
 
-            // 处理所有 Issues
+            // 遍历所有 Issues，统计投票和理由
             issues.forEach(issue => {
                 const vote = issue.title;  // 通过标题获取投票选项
                 const reason = issue.body; // 通过 body 获取投票理由
+
+                // 根据选项名称更新投票数和理由
                 if (votes[vote] !== undefined) {
                     votes[vote] += 1;
                     reasons[vote].push(reason);
@@ -76,7 +79,9 @@
             displayVotes(votes, reasons);
         }
 
+        // 显示投票结果和理由
         function displayVotes(votes, reasons) {
+            // 显示投票结果
             document.getElementById('vote-result').innerHTML = `
                 <h3>投票结果：</h3>
                 <p>乔治: ${votes.乔治 || 0}</p>
@@ -84,6 +89,7 @@
                 <p>Hpv: ${votes.Hpv || 0}</p>
             `;
             
+            // 显示投票理由
             let reasonsContent = "<h3>投票理由：</h3>";
             Object.keys(reasons).forEach(option => {
                 reasonsContent += `<h4>${option}</h4>`;
@@ -95,14 +101,12 @@
             document.getElementById('reasons-list').innerHTML = reasonsContent;
         }
 
-        // 页面加载时获取投票数据
-        fetchIssues();
-
         // 提交投票并跳转到 GitHub Issues 页面
         function submitVote() {
             const selectedOption = document.querySelector('input[name="vote"]:checked');
             const reasonText = document.getElementById('reason').value;
             
+            // 检查用户是否选择了投票选项和提供了理由
             if (!selectedOption || !reasonText) {
                 alert('请选择一个选项并提供投票理由');
                 return;
@@ -113,10 +117,13 @@
 
             // 创建新的 Issue 页面链接
             const issueURL = `https://github.com/zzquui/fwr-cs/issues/new?title=投票%20${vote}&body=${reason}`;
-            
-            // 跳转到 GitHub Issues 页面
+
+            // 跳转到 GitHub Issues 页面，创建新 Issue
             window.location.href = issueURL;
         }
+
+        // 页面加载时获取投票数据
+        fetchIssues();
     </script>
 
 </body>
