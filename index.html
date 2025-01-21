@@ -37,9 +37,9 @@
 
     <div id="vote-result">
         <h3>投票结果：</h3>
-        <p>Python: <span id="python-result">0</span></p>
-        <p>C++: <span id="cpp-result">0</span></p>
-        <p>JavaScript: <span id="js-result">0</span></p>
+        <p>乔治: <span id="python-result">0</span></p>
+        <p>孟子: <span id="cpp-result">0</span></p>
+        <p>Hpv: <span id="js-result">0</span></p>
     </div>
 
     <div class="reasons">
@@ -58,9 +58,9 @@
             const content = atob(data.content);
             const votes = JSON.parse(content);
 
-            document.getElementById('python-result').textContent = votes.Python || 0;
-            document.getElementById('cpp-result').textContent = votes.Cpp || 0;
-            document.getElementById('js-result').textContent = votes.JavaScript || 0;
+            document.getElementById('python-result').textContent = votes.乔治 || 0;
+            document.getElementById('cpp-result').textContent = votes.孟子 || 0;
+            document.getElementById('js-result').textContent = votes.Hpv || 0;
         }
 
         async function fetchReasons() {
@@ -101,7 +101,7 @@
             await fetch(votesFilePath, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `token YOUR_GITHUB_TOKEN`,
+                    'Authorization': `token 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`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
