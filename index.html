@@ -39,10 +39,9 @@
 
     <div id="vote-result">
         <h3>投票结果：</h3>
-        <p>乔治: <span id="python-result">0</span> 票</p>
-        <p>孟子: <span id="cpp-result">0</span> 票</p>
-        <p>Hpv: <span id="js-result">0</span> 票</p>
-        <h4>总票数: <span id="total-votes">0</span> 票</h4>
+        <p>乔治: <span id="python-result">0</span></p>
+        <p>孟子: <span id="cpp-result">0</span></p>
+        <p>Hpv: <span id="js-result">0</span></p>
     </div>
 
     <div class="reasons">
@@ -51,75 +50,76 @@
     </div>
 
     <script>
-        // GitHub 仓库信息
-        const repoOwner = 'zzquui';  // 你的 GitHub 用户名
-        const repoName = 'fwr-cs';   // 你的 GitHub 仓库名
-        const issueLabels = ['乔治', '孟子', 'Hpv']; // 3 个选项的标签
+        const repoOwner = 'zzquui';
+        const repoName = 'fwr-cs';
+        const issueIds = {
+            "乔治": 4, // Issue 1 的 ID
+            "孟子": 5, // Issue 2 的 ID
+            "Hpv": 6   // Issue 3 的 ID
+        };
 
-        // 获取每个 Issue 的评论数（即每个选项的票数）
+        const token = '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';  // 需要替换为实际的 GitHub Token
+
+        // 获取现有的评论，统计票数
         async function fetchIssues() {
-            const votes = { "乔治": 0, "孟子": 0, "Hpv": 0 };
+            let votes = { "乔治": 0, "孟子": 0, "Hpv": 0 };
+            let reasons = { "乔治": [], "孟子": [], "Hpv": [] };
 
-            // 获取每个 Issue 的评论数
-            for (let label of issueLabels) {
-                const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/issues?state=open&labels=${label}`);
-                const issues = await response.json();
-                const issue = issues[0]; // 获取第一个 Issue
-                const comments = issue.comments || 0; // 获取评论数（即票数）
-                votes[label] = comments;
+            for (let option in issueIds) {
+                const issueId = issueIds[option];
+                const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/issues/${issueId}/comments`, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                    }
+                });
+
+                const comments = await response.json();
+                if (comments && Array.isArray(comments)) {
+                    votes[option] = comments.length;  // 评论数量即为票数
+                    comments.forEach(comment => {
+                        reasons[option].push(comment.body);
+                    });
+                }
             }
 
-            // 更新页面显示
-            displayVotes(votes);
+            displayVotes(votes, reasons);
         }
 
         // 显示投票结果
-        function displayVotes(votes) {
-            document.getElementById('python-result').textContent = votes.乔治 || 0;
-            document.getElementById('cpp-result').textContent = votes.孟子 || 0;
-            document.getElementById('js-result').textContent = votes.Hpv || 0;
-            
-            // 显示总票数
-            const totalVotes = votes.乔治 + votes.孟子 + votes.Hpv;
-            document.getElementById('total-votes').textContent = totalVotes;
+        function displayVotes(votes, reasons) {
+            document.getElementById('vote-result').innerHTML = `
+                <h3>投票结果：</h3>
+                <p>乔治: ${votes.乔治 || 0}</p>
+                <p>孟子: ${votes.孟子 || 0}</p>
+                <p>Hpv: ${votes.Hpv || 0}</p>
+            `;
+
+            let reasonsContent = "<h3>投票理由：</h3>";
+            Object.keys(reasons).forEach(option => {
+                reasonsContent += `<h4>${option}</h4>`;
+                reasons[option].forEach(reason => {
+                    reasonsContent += `<p>${reason}</p>`;
+                });
+            });
+
+            document.getElementById('reasons-list').innerHTML = reasonsContent;
         }
 
-        // 提交投票并添加评论
+        // 提交投票
         async function submitVote() {
             const selectedOption = document.querySelector('input[name="vote"]:checked');
             const reasonText = document.getElementById('reason').value;
             
-            // 检查用户是否选择了投票选项和提供了理由
             if (!selectedOption || !reasonText) {
                 alert('请选择一个选项并提供投票理由');
                 return;
             }
 
             const vote = selectedOption.value;
-            const reason = reasonText;  // 获取用户输入的理由
+            const reason = reasonText;
 
-            // 获取对应选项的 Issue ID
-            const issueId = await getIssueId(vote); // 根据选项获取对应的 Issue ID
+            const issueId = issueIds[vote];
 
-            if (issueId) {
-                // 在对应的 Issue 下添加评论
-                await postComment(issueId, reason);
-                alert('投票提交成功！');
-                fetchIssues();  // 刷新票数
-            }
-        }
-
-        // 获取对应投票选项的 Issue ID
-        async function getIssueId(vote) {
-            const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/issues?state=open&labels=${vote}`);
-            const issues = await response.json();
-            const issue = issues[0]; // 获取第一个 Issue
-            return issue ? issue.id : null;
-        }
-
-        // 在 Issue 下添加评论
-        async function postComment(issueId, comment) {
-            const token = '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';  // 你需要替换为 GitHub 的 Token
             const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/issues/${issueId}/comments`, {
                 method: 'POST',
                 headers: {
@@ -127,12 +127,15 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    body: comment
+                    body: reason
                 })
             });
 
-            if (!response.ok) {
-                alert('评论提交失败，请稍后再试');
+            if (response.ok) {
+                alert('投票提交成功!');
+                fetchIssues();  // 刷新投票结果
+            } else {
+                alert('提交失败，请重试');
             }
         }
 
