@@ -3,146 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CS投票</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        h1 { color: #4CAF50; }
-        .vote-option { margin: 10px 0; }
-        .vote-option input { margin-right: 10px; }
-        #vote-result { margin-top: 20px; }
-        .reasons { margin-top: 20px; }
-    </style>
+    <title>投票系统</title>
 </head>
 <body>
-
-    <h1>CS投票</h1>
-    <p>请选择今天让你生气的畜生，并提供详细原因：</p>
-    
-    <div class="vote-option">
-        <input type="radio" name="vote" value="乔治" id="python"> 
-        <label for="python">乔治</label>
-    </div>
-    <div class="vote-option">
-        <input type="radio" name="vote" value="孟子" id="cpp">
-        <label for="cpp">孟子</label>
-    </div>
-    <div class="vote-option">
-        <input type="radio" name="vote" value="Hpv" id="js">
-        <label for="js">Hpv</label>
-    </div>
-
-    <textarea id="reason" placeholder="请输入你的理由" rows="4" cols="50"></textarea><br><br>
-    
-    <button onclick="submitVote()">提交投票</button>
-
-    <div id="vote-result">
-        <h3>投票结果：</h3>
-        <p>乔治: <span id="python-result">0</span></p>
-        <p>孟子: <span id="cpp-result">0</span></p>
-        <p>Hpv: <span id="js-result">0</span></p>
-    </div>
-
-    <div class="reasons">
-        <h3>投票理由：</h3>
-        <div id="reasons-list"></div>
-    </div>
-
-    <script>
-        // 投票数据存储路径（GitHub API）
-        const votesFilePath = 'https://api.github.com/repos/zzquui/fwr-cs/contents/votes.json';
-        const reasonsFilePath = 'https://api.github.com/repos/zzquui/fwr-cs/contents/reasons.json';
-
-        async function fetchVotes() {
-            const response = await fetch(votesFilePath);
-            const data = await response.json();
-            const content = atob(data.content);
-            const votes = JSON.parse(content);
-
-            document.getElementById('python-result').textContent = votes.乔治 || 0;
-            document.getElementById('cpp-result').textContent = votes.孟子 || 0;
-            document.getElementById('js-result').textContent = votes.Hpv || 0;
-        }
-
-        async function fetchReasons() {
-            const response = await fetch(reasonsFilePath);
-            const data = await response.json();
-            const content = atob(data.content);
-            const reasons = JSON.parse(content);
-
-            const reasonsList = document.getElementById('reasons-list');
-            reasonsList.innerHTML = '';
-            for (const reason of reasons) {
-                const reasonDiv = document.createElement('div');
-                reasonDiv.textContent = reason;
-                reasonsList.appendChild(reasonDiv);
-            }
-        }
-
-        async function submitVote() {
-            const selectedOption = document.querySelector('input[name="vote"]:checked');
-            const reasonText = document.getElementById('reason').value;
-            
-            if (!selectedOption || !reasonText) {
-                alert('请选择一个选项并提供投票理由');
-                return;
-            }
-
-            const vote = selectedOption.value;
-            const response = await fetch(votesFilePath);
-            const data = await response.json();
-            const content = atob(data.content);
-            const votes = JSON.parse(content);
-
-            // 增加选项投票数
-            votes[vote] = (votes[vote] || 0) + 1;
-
-            // 提交更新的投票数据
-            const updatedContent = btoa(JSON.stringify(votes));
-            await fetch(votesFilePath, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `token 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`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    message: '更新投票结果',
-                    content: updatedContent,
-                    sha: data.sha
-                })
-            });
-
-            // 添加投票理由
-            const reasonResponse = await fetch(reasonsFilePath);
-            const reasonData = await reasonResponse.json();
-            const reasonContent = atob(reasonData.content);
-            const reasons = JSON.parse(reasonContent);
-
-            reasons.push(reasonText);
-
-            const updatedReasons = btoa(JSON.stringify(reasons));
-            await fetch(reasonsFilePath, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `token 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`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    message: '添加投票理由',
-                    content: updatedReasons,
-                    sha: reasonData.sha
-                })
-            });
-
-            // 刷新投票结果和投票理由
-            fetchVotes();
-            fetchReasons();
-            
-        }
-
-        fetchVotes();
-        fetchReasons();
-       
-    </script>
-
+    <h1>投票系统</h1>
+    <p>请选择今天让你生气的畜生，并提供投票理由：</p>
+    <form action="https://github.com/your-username/your-repo-name/issues/new" method="get">
+        <label>
+            <input type="radio" name="vote" value="乔治"> 乔治
+        </label><br>
+        <label>
+            <input type="radio" name="vote" value="孟子"> 孟子
+        </label><br>
+        <label>
+            <input type="radio" name="vote" value="Hpv"> Hpv
+        </label><br><br>
+        <textarea name="reason" placeholder="请输入你的投票理由" rows="4" cols="50"></textarea><br><br>
+        <button type="submit">提交投票</button>
+    </form>
 </body>
 </html>
