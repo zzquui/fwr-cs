@@ -54,35 +54,27 @@
         // GitHub 仓库信息
         const repoOwner = 'zzquui';  // 你 GitHub 仓库的用户名
         const repoName = 'fwr-cs';   // 你 GitHub 仓库的名称
-        const issueLabel = 'CS榜';   // 给投票的 Issues 添加标签
+        const issueLabels = ['乔治', '孟子', 'Hpv']; // 三个投票选项
 
-        // 获取带标签的 Issue
+        // 获取每个 Issue 的评论数（即每个选项的票数）
         async function fetchIssues() {
-            const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/issues?labels=${issueLabel}`);
-            const issues = await response.json();
-
             const votes = { "乔治": 0, "孟子": 0, "Hpv": 0 };
-            const reasons = { "乔治": [], "孟子": [], "Hpv": [] };
 
-            // 遍历所有 Issues，统计投票和理由
-            issues.forEach(issue => {
-                const vote = issue.title;  // 通过标题获取投票选项
-                const reason = issue.body; // 通过 body 获取投票理由
-
-                // 根据选项名称更新投票数和理由
-                if (votes[vote] !== undefined) {
-                    votes[vote] += 1;
-                    reasons[vote].push(reason);
-                }
-            });
+            // 获取每个 Issue 的评论数
+            for (let label of issueLabels) {
+                const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/issues?state=open&labels=${label}`);
+                const issues = await response.json();
+                const issue = issues[0]; // 每个选项应该有一个对应的 Issue
+                const comments = issue.comments || 0; // 获取评论数，即票数
+                votes[label] = comments;
+            }
 
             // 更新页面显示
-            displayVotes(votes, reasons);
+            displayVotes(votes);
         }
 
-        // 显示投票结果和理由
-        function displayVotes(votes, reasons) {
-            // 显示每个选项的票数
+        // 显示投票结果
+        function displayVotes(votes) {
             document.getElementById('python-result').textContent = votes.乔治 || 0;
             document.getElementById('cpp-result').textContent = votes.孟子 || 0;
             document.getElementById('js-result').textContent = votes.Hpv || 0;
@@ -90,21 +82,10 @@
             // 显示总票数
             const totalVotes = votes.乔治 + votes.孟子 + votes.Hpv;
             document.getElementById('total-votes').textContent = totalVotes;
-
-            // 显示投票理由
-            let reasonsContent = "<h3>投票理由：</h3>";
-            Object.keys(reasons).forEach(option => {
-                reasonsContent += `<h4>${option}</h4>`;
-                reasons[option].forEach(reason => {
-                    reasonsContent += `<p>${reason}</p>`;
-                });
-            });
-            
-            document.getElementById('reasons-list').innerHTML = reasonsContent;
         }
 
-        // 提交投票并跳转到 GitHub Issues 页面
-        function submitVote() {
+        // 提交投票并添加评论
+        async function submitVote() {
             const selectedOption = document.querySelector('input[name="vote"]:checked');
             const reasonText = document.getElementById('reason').value;
             
@@ -115,17 +96,49 @@
             }
 
             const vote = selectedOption.value;
-            const reason = encodeURIComponent(reasonText);  // 对投票理由进行编码
+            const reason = reasonText;  // 获取用户输入的理由
 
-            // 创建新的 Issue 页面链接
-            const issueURL = `https://github.com/zzquui/fwr-cs/issues/new?title=投票%20${vote}&body=${reason}`;
+            // 创建一个新的评论
+            const issueId = await getIssueId(vote); // 根据选项获取对应的 Issue ID
 
-            // 跳转到 GitHub Issues 页面，创建新 Issue
-            window.location.href = issueURL;
+            if (issueId) {
+                // 在对应的 Issue 下添加评论
+                await postComment(issueId, reason);
+                alert('投票提交成功！');
+                fetchIssues();  // 刷新票数
+            }
+        }
+
+        // 获取对应投票选项的 Issue ID
+        async function getIssueId(vote) {
+            const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/issues?state=open&labels=${vote}`);
+            const issues = await response.json();
+            const issue = issues[0]; // 获取第一个 Issue
+            return issue ? issue.id : null;
+        }
+
+        // 在 Issue 下添加评论
+        async function postComment(issueId, comment) {
+            const token = 'your_github_token';  // 替换为你的 GitHub Token
+            const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/issues/${issueId}/comments`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    body: comment
+                })
+            });
+
+            if (!response.ok) {
+                alert('评论提交失败，请稍后再试');
+            }
         }
 
         // 页面加载时获取投票数据
         fetchIssues();
+
     </script>
 
 </body>
