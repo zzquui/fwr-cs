@@ -119,7 +119,7 @@
 
         // 在 Issue 下添加评论
         async function postComment(issueId, comment) {
-            const token = 'your_github_token';  // 你需要替换为 GitHub 的 Token
+            const token = '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';  // 你需要替换为 GitHub 的 Token
             const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/issues/${issueId}/comments`, {
                 method: 'POST',
                 headers: {
