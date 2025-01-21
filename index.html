@@ -18,18 +18,23 @@
     <h1>投票系统</h1>
     <p>请选择今天让你生气的畜生，并提供投票理由：</p>
     
-    <form action="https://github.com/your-username/your-repo-name/issues/new" method="get">
-        <label>
-            <input type="radio" name="vote" value="乔治"> 乔治
-        </label><br>
-        <label>
-            <input type="radio" name="vote" value="孟子"> 孟子
-        </label><br>
-        <label>
-            <input type="radio" name="vote" value="Hpv"> Hpv
-        </label><br><br>
-        <textarea name="reason" placeholder="请输入你的投票理由" rows="4" cols="50"></textarea><br><br>
-        <button type="submit">提交投票</button>
+    <form id="vote-form">
+        <div class="vote-option">
+            <input type="radio" name="vote" value="乔治" id="python"> 
+            <label for="python">乔治</label>
+        </div>
+        <div class="vote-option">
+            <input type="radio" name="vote" value="孟子" id="cpp">
+            <label for="cpp">孟子</label>
+        </div>
+        <div class="vote-option">
+            <input type="radio" name="vote" value="Hpv" id="js">
+            <label for="js">Hpv</label>
+        </div>
+
+        <textarea id="reason" placeholder="请输入你的理由" rows="4" cols="50"></textarea><br><br>
+        
+        <button type="button" onclick="submitVote()">提交投票</button>
     </form>
 
     <div id="vote-result">
@@ -46,8 +51,8 @@
 
     <script>
         // 投票数据存储路径（GitHub API）
-        const repoOwner = 'zzquui';
-        const repoName = 'fwr-cs';
+        const repoOwner = 'your-username';
+        const repoName = 'your-repo-name';
         const issueLabel = '投票';  // 给投票的 Issues 添加标签
 
         async function fetchIssues() {
@@ -92,6 +97,26 @@
 
         // 页面加载时获取投票数据
         fetchIssues();
+
+        // 提交投票并跳转到 GitHub Issues 页面
+        function submitVote() {
+            const selectedOption = document.querySelector('input[name="vote"]:checked');
+            const reasonText = document.getElementById('reason').value;
+            
+            if (!selectedOption || !reasonText) {
+                alert('请选择一个选项并提供投票理由');
+                return;
+            }
+
+            const vote = selectedOption.value;
+            const reason = encodeURIComponent(reasonText);  // 对投票理由进行编码
+
+            // 创建新的 Issue 页面链接
+            const issueURL = `https://github.com/your-username/your-repo-name/issues/new?title=投票%20${vote}&body=${reason}`;
+            
+            // 跳转到 GitHub Issues 页面
+            window.location.href = issueURL;
+        }
     </script>
 
 </body>
