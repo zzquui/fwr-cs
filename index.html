@@ -39,9 +39,10 @@
 
     <div id="vote-result">
         <h3>投票结果：</h3>
-        <p>乔治: <span id="python-result">0</span></p>
-        <p>孟子: <span id="cpp-result">0</span></p>
-        <p>Hpv: <span id="js-result">0</span></p>
+        <p>乔治: <span id="python-result">0</span> 票</p>
+        <p>孟子: <span id="cpp-result">0</span> 票</p>
+        <p>Hpv: <span id="js-result">0</span> 票</p>
+        <h4>总票数: <span id="total-votes">0</span> 票</h4>
     </div>
 
     <div class="reasons">
@@ -81,14 +82,15 @@
 
         // 显示投票结果和理由
         function displayVotes(votes, reasons) {
-            // 显示投票结果
-            document.getElementById('vote-result').innerHTML = `
-                <h3>投票结果：</h3>
-                <p>乔治: ${votes.乔治 || 0}</p>
-                <p>孟子: ${votes.孟子 || 0}</p>
-                <p>Hpv: ${votes.Hpv || 0}</p>
-            `;
+            // 显示每个选项的票数
+            document.getElementById('python-result').textContent = votes.乔治 || 0;
+            document.getElementById('cpp-result').textContent = votes.孟子 || 0;
+            document.getElementById('js-result').textContent = votes.Hpv || 0;
             
+            // 显示总票数
+            const totalVotes = votes.乔治 + votes.孟子 + votes.Hpv;
+            document.getElementById('total-votes').textContent = totalVotes;
+
             // 显示投票理由
             let reasonsContent = "<h3>投票理由：</h3>";
             Object.keys(reasons).forEach(option => {
