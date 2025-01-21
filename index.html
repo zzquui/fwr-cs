@@ -52,11 +52,11 @@
 
     <script>
         // GitHub 仓库信息
-        const repoOwner = 'zzquui';
-        const repoName = 'fwr-cs';
-        const issueLabel = 'CS榜';  // 给投票的 Issues 添加标签
+        const repoOwner = 'zzquui';  // 你 GitHub 仓库的用户名
+        const repoName = 'fwr-cs';   // 你 GitHub 仓库的名称
+        const issueLabel = 'CS榜';   // 给投票的 Issues 添加标签
 
-        // 获取所有带标签的 Issue
+        // 获取带标签的 Issue
         async function fetchIssues() {
             const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/issues?labels=${issueLabel}`);
             const issues = await response.json();
